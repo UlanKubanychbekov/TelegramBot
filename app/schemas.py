@@ -7,8 +7,16 @@ class EmployeeBase(BaseModel):
     active: Optional[bool] = True
     telegram_id: Optional[str] = None
 
-class EmployeeCreate(EmployeeBase):
-    pass
+from pydantic import BaseModel
+from typing import Optional
+
+class EmployeeCreate(BaseModel):
+    name: str
+    active: bool = True
+    telegram_id: Optional[str] = None
+
+    class Config:
+        orm_mode = True
 
 class Employee(EmployeeBase):
     id: int

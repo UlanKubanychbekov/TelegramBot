@@ -12,3 +12,9 @@ class EmployeeRepository:
 
     async def get_item(self, employee_id: int):
         return await self.db.get(Employee, employee_id)
+
+    async def create(self, employee: Employee):
+        self.db.add(employee)
+        await self.db.commit()
+        await self.db.refresh(employee)
+        return employee

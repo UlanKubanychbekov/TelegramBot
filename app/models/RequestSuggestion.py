@@ -13,4 +13,4 @@ class RequestSuggestion(Base):
     approved = Column(Boolean, default=False)
 
     request = relationship("Request", back_populates="suggestions")
-    supplier = relationship("Supplier", back_populates="suggestions")
+    supplier = relationship("Supplier", back_populates="request_suggestions")
