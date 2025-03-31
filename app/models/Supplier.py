@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
+from sqlalchemy.orm import relationship
+from app.database import Base
 
 class Supplier(Base):
     __tablename__ = "suppliers"
@@ -11,3 +10,5 @@ class Supplier(Base):
     active = Column(Boolean, default=True)
     phone_number = Column(String, nullable=False)
     telegram_id = Column(String, unique=True, nullable=True)
+
+    request_suggestions = relationship("RequestSuggestion", back_populates="supplier")

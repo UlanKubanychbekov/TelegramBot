@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
+from sqlalchemy.orm import relationship
+from app.database import Base
 
 class Employee(Base):
     __tablename__ = "employees"
@@ -10,3 +9,5 @@ class Employee(Base):
     name = Column(String, nullable=False)
     active = Column(Boolean, default=True)
     telegram_id = Column(String, unique=True, nullable=True)
+
+    requests = relationship("Request", back_populates="employee")

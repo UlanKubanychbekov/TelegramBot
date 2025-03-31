@@ -1,21 +1,23 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from models.Employee import Employee
-from schemas import EmployeeCreate
-from database import get_db
+from app.service.EmployeeService import EmployeeService
+from app.schemas import EmployeeCreate, Employee
+from app.database import get_db
+from typing import List
 
 router = APIRouter()
 
-@router.post("/employees/")
-async def create_employee(employee: EmployeeCreate, db: AsyncSession = Depends(get_db)):
-    new_employee = Employee(name=employee.name, telegram_id=employee.telegram_id)
-    db.add(new_employee)
-    await db.commit()
-    return {"message": "Employee created successfully!"}
-
-@router.get("/employees/")
+@router.get("/employees/", response_model=List[Employee])
 async def get_employees(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Employee))
-    employees = result.scalars().all()
-    return employees
+    employee_service = EmployeeService(db)
+    return await employee_service.get_list()
+
+@router.get("/employees/{employee_id}", response_model=Employee)
+async def get_employee(employee_id: int, db: AsyncSession = Depends(get_db)):
+    employee_service = EmployeeService(db)
+    return await employee_service.get_item(employee_id)
+
+@router.post("/employees/", response_model=Employee)
+async def create_employee(employee: EmployeeCreate, db: AsyncSession = Depends(get_db)):
+    employee_service = EmployeeService(db)
+    return await employee_service.create(employee)
