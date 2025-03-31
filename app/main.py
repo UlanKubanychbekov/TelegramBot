@@ -26,7 +26,7 @@ async def startup_event():
 
 @app.get("/")
 async def read_root():
-    return {"message": "Welcome to the FastAPI1 application"}
+    return {"message": "Welcome to the FastAPI application"}
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

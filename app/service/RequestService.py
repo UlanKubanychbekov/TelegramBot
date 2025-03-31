@@ -37,15 +37,17 @@ class RequestService:
                 destination=request_create.destination,
                 truck_type_id=request_create.truck_type_id,
                 speed_type_id=request_create.speed_type_id,
-                created_at=request_create.created_at,
-                start_date=request_create.start_date,
+                created_at=request_create.created_at.replace(
+                    tzinfo=None) if request_create.created_at.tzinfo else request_create.created_at,
+                start_date=request_create.start_date.replace(
+                    tzinfo=None) if request_create.start_date.tzinfo else request_create.start_date,
                 employee_id=request_create.employee_id,
                 telegram_message_link=request_create.telegram_message_link
             )
             return await self.repository.create(request)
         except Exception as e:
-            logger.error(f"Error creating request: {e}")
-            raise HTTPException(status_code=500, detail="Internal Server Error")
+            logger.error(f"Error creating requestt: {e}")
+            raise HTTPException(status_code=500, detail="Internal Server Errorr")
 
     async def get_by(self, **kwargs):
         try:
