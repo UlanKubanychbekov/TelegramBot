@@ -50,8 +50,11 @@ class RequestService:
             raise HTTPException(status_code=500, detail="Internal Server Errorr")
 
     async def get_by(self, **kwargs):
+        origin = kwargs.get('field1')
+        destination = kwargs.get('field3')
+        truck_type_id = kwargs.get('field2')
         try:
-            return await self.repository.get_by(**kwargs)
+            return await self.repository.get_by(origin=origin, destination=destination, truck_type_id=truck_type_id)
         except Exception as e:
             logger.error(f"Error fetching requests by {kwargs}: {e}")
             raise HTTPException(status_code=500, detail="Internal Server Error")

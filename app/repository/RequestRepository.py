@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.models.Request import Request
+from typing import Optional
 
 class RequestRepository:
     def __init__(self, db: AsyncSession):
@@ -19,7 +20,15 @@ class RequestRepository:
         await self.db.refresh(request)
         return request
 
-    async def get_by(self, **kwargs):
-        query = select(Request).filter_by(**kwargs)
+    async def get_by(self, origin: Optional[str] = None, destination: Optional[str] = None, truck_type_id: Optional[int] = None):
+        query = select(Request)
+
+        if origin:
+            query = query.where(Request.origin == origin)
+        if destination:
+            query = query.where(Request.destination == destination)
+        if truck_type_id:
+            query = query.where(Request.truck_type_id == truck_type_id)
+
         result = await self.db.execute(query)
         return result.scalars().all()

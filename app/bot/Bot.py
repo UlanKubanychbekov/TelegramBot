@@ -1,8 +1,13 @@
+# для запуска бота используйте команды в терминале:
+# $env:PYTHONPATH="C:\Users\user\PycharmProjects\TelegramBot"
+# python app\bot\Bot.py
+
 import asyncio
 from datetime import datetime
 import logging
-import os
 import sys
+from dotenv import load_dotenv
+import os
 
 from aiogram import Bot, Dispatcher, types
 from aiogram import Router
@@ -16,10 +21,12 @@ from app.models.Employee import Employee
 from app.models.Request import Request
 from app.models.Supplier import Supplier
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+load_dotenv()
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 logging.basicConfig(level=logging.INFO)
-API_TOKEN = '8011092603:AAGDvX5_WHCu6JuDyIVDOys6JqKfj_OcZRg'
+API_TOKEN = os.getenv('API_TOKEN')
 
 bot = Bot(token=API_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 storage = MemoryStorage()
