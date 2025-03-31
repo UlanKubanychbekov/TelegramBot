@@ -12,3 +12,9 @@ class SpeedTypeRepository:
 
     async def get_item(self, speed_type_id: int):
         return await self.db.get(SpeedType, speed_type_id)
+
+    async def create(self, speed_type: SpeedType):
+        self.db.add(speed_type)
+        await self.db.commit()
+        await self.db.refresh(speed_type)
+        return speed_type

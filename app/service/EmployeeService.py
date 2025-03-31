@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 from app.schemas import EmployeeCreate
 from app.models.Employee import Employee
-from app.repository import EmployeeRepository
+from app.repository.EmployeeRepository import EmployeeRepository
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

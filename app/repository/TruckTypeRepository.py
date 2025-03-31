@@ -12,3 +12,9 @@ class TruckTypeRepository:
 
     async def get_item(self, truck_type_id: int):
         return await self.db.get(TruckType, truck_type_id)
+
+    async def create(self, truck_type: TruckType):
+        self.db.add(truck_type)
+        await self.db.commit()
+        await self.db.refresh(truck_type)
+        return truck_type

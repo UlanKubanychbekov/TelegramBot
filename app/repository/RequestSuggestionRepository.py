@@ -12,3 +12,9 @@ class RequestSuggestionRepository:
 
     async def get_item(self, suggestion_id: int):
         return await self.db.get(RequestSuggestion, suggestion_id)
+
+    async def create(self, suggestion: RequestSuggestion):
+        self.db.add(suggestion)
+        await self.db.commit()
+        await self.db.refresh(suggestion)
+        return suggestion

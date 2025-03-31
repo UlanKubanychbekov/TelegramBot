@@ -1,11 +1,15 @@
-from fastapi import FastAPI
-from app.api.EmployeeApi  import router as employees_router
+import logging
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from app.api.EmployeeApi import router as employees_router
 from app.api.RequestApi import router as requests_router
 from app.api.SupplierApi import router as suppliers_router
 from app.api.RequestSuggestionApi import router as suggestions_router
 from app.api.TruckTypeApi import router as truck_types_router
 from app.api.SpeedTypeApi import router as speed_types_router
 from app.database import init_db
+
+logger = logging.getLogger("uvicorn.error")
 
 app = FastAPI()
 
@@ -22,4 +26,12 @@ async def startup_event():
 
 @app.get("/")
 async def read_root():
-    return {"message": "Welcome to the FastAPI application"}
+    return {"message": "Welcome to the FastAPI1 application"}
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"An error occurred: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"message": "An error occurred", "details": str(exc)},
+    )

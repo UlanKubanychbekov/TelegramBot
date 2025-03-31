@@ -7,22 +7,17 @@ class EmployeeBase(BaseModel):
     active: Optional[bool] = True
     telegram_id: Optional[str] = None
 
-from pydantic import BaseModel
-from typing import Optional
-
-class EmployeeCreate(BaseModel):
-    name: str
-    active: bool = True
-    telegram_id: Optional[str] = None
-
-    class Config:
-        orm_mode = True
+class EmployeeCreate(EmployeeBase):
+    pass
 
 class Employee(EmployeeBase):
     id: int
 
     class Config:
-        orm_mode= True
+        orm_mode: True
+
+class EmployeeResponse(Employee):
+    pass
 
 class SupplierBase(BaseModel):
     legal_name: str
@@ -38,6 +33,9 @@ class Supplier(SupplierBase):
 
     class Config:
         orm_mode: True
+
+class SupplierResponse(Supplier):
+    pass
 
 class RequestBase(BaseModel):
     origin: str
@@ -58,6 +56,9 @@ class Request(RequestBase):
     class Config:
         orm_mode: True
 
+class RequestResponse(Request):
+    pass
+
 class RequestSuggestionBase(BaseModel):
     supplier_id: int
     request_id: int
@@ -74,6 +75,9 @@ class RequestSuggestion(RequestSuggestionBase):
     class Config:
         orm_mode: True
 
+class RequestSuggestionResponse(RequestSuggestion):
+    pass
+
 class TruckTypeBase(BaseModel):
     type_name: str
     active: Optional[bool] = True
@@ -87,6 +91,9 @@ class TruckType(TruckTypeBase):
     class Config:
         orm_mode: True
 
+class TruckTypeResponse(TruckType):
+    pass
+
 class SpeedTypeBase(BaseModel):
     type_name: str
     active: Optional[bool] = True
@@ -99,3 +106,6 @@ class SpeedType(SpeedTypeBase):
 
     class Config:
         orm_mode: True
+
+class SpeedTypeResponse(SpeedType):
+    pass

@@ -13,6 +13,13 @@ class RequestRepository:
     async def get_item(self, request_id: int):
         return await self.db.get(Request, request_id)
 
+    async def create(self, request: Request):
+        self.db.add(request)
+        await self.db.commit()
+        await self.db.refresh(request)
+        return request
+
     async def get_by(self, **kwargs):
-        result = await self.db.execute(select(Request).filter_by(**kwargs))
+        query = select(Request).filter_by(**kwargs)
+        result = await self.db.execute(query)
         return result.scalars().all()

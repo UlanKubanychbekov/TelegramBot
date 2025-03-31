@@ -12,3 +12,9 @@ class SupplierRepository:
 
     async def get_item(self, supplier_id: int):
         return await self.db.get(Supplier, supplier_id)
+
+    async def create(self, supplier: Supplier):
+        self.db.add(supplier)
+        await self.db.commit()
+        await self.db.refresh(supplier)
+        return supplier

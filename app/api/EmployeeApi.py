@@ -29,7 +29,6 @@ async def get_employee(employee_id: int, db: AsyncSession = Depends(get_db)):
     print(f"Employee fetched: {employee}")
     return employee
 
-# Маршрут для создания нового сотрудника
 @router.post("/employees/", response_model=Employee)
 async def create_employee(employee: EmployeeCreate, db: AsyncSession = Depends(get_db)):
     print("Executing create_employee")
