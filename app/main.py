@@ -25,8 +25,9 @@ app = FastAPI()
 
 # --- Telegram bot ---
 API_TOKEN = os.getenv("BOT_TOKEN")
-if not API_TOKEN:
-    raise RuntimeError("BOT_TOKEN не задан в переменных окружения!")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+if not API_TOKEN or not WEBHOOK_URL:
+    raise RuntimeError("BOT_TOKEN или WEBHOOK_URL не задан")
 
 bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
@@ -41,10 +42,10 @@ app.include_router(suggestions_router, prefix="/api", tags=["suggestions"])
 app.include_router(truck_types_router, prefix="/api", tags=["truck_types"])
 app.include_router(speed_types_router, prefix="/api", tags=["speed_types"])
 
-# --- Root ---
+# --- Root endpoint ---
 @app.get("/")
-async def read_root():
-    return {"message": "Welcome to the FastAPI application"}
+async def root():
+    return {"message": "FastAPI + Aiogram Webhook is running"}
 
 # --- Глобальный обработчик ошибок ---
 @app.exception_handler(Exception)
@@ -58,58 +59,27 @@ async def global_exception_handler(request: Request, exc: Exception):
 # --- Webhook endpoint ---
 @app.post("/webhook")
 async def telegram_webhook(update: dict):
-    """Обработка входящих обновлений от Telegram"""
     try:
         tg_update = Update(**update)
         await dp.process_update(tg_update)
         return {"ok": True}
     except Exception as e:
-        logger.error(f"Ошибка при обработке webhook: {e}")
+        logger.error(f"Webhook processing error: {e}")
         return {"ok": False, "error": str(e)}
 
-# --- Ручка для установки webhook ---
-@app.get("/set_webhook")
-async def set_webhook():
-    webhook_url = os.getenv("WEBHOOK_URL")
-    if not webhook_url:
-        return {"ok": False, "error": "WEBHOOK_URL не задан"}
-    try:
-        await bot.delete_webhook(drop_pending_updates=True)
-        await bot.set_webhook(webhook_url)
-        logger.info(f"Webhook установлен на {webhook_url}")
-        return {"ok": True, "message": f"Webhook установлен на {webhook_url}"}
-    except Exception as e:
-        logger.error(f"Не удалось установить webhook: {e}")
-        return {"ok": False, "error": str(e)}
-
-# --- Ручка для удаления webhook ---
-@app.get("/delete_webhook")
-async def delete_webhook():
-    try:
-        await bot.delete_webhook()
-        logger.info("Webhook удалён")
-        return {"ok": True, "message": "Webhook удалён"}
-    except Exception as e:
-        logger.error(f"Не удалось удалить webhook: {e}")
-        return {"ok": False, "error": str(e)}
-
+# --- Startup event ---
 @app.on_event("startup")
 async def startup_event():
     await init_db()
     logger.info("База данных инициализирована")
+    try:
+        await bot.delete_webhook(drop_pending_updates=True)
+        await bot.set_webhook(WEBHOOK_URL)
+        logger.info(f"Webhook установлен на {WEBHOOK_URL}")
+    except Exception as e:
+        logger.error(f"Не удалось установить webhook: {e}")
 
-    webhook_url = os.getenv("WEBHOOK_URL")
-    if webhook_url:
-        try:
-            await bot.delete_webhook(drop_pending_updates=True)
-            await bot.set_webhook(webhook_url)
-            logger.info(f"Webhook установлен автоматически на {webhook_url}")
-        except Exception as e:
-            logger.error(f"Не удалось установить webhook при старте: {e}")
-    else:
-        logger.warning("WEBHOOK_URL не задан — бот работать не будет!")
-
-# --- Shutdown ---
+# --- Shutdown event ---
 @app.on_event("shutdown")
 async def shutdown_event():
     try:
