@@ -61,7 +61,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def telegram_webhook(update: dict):
     try:
         tg_update = Update(**update)
-        await dp.process_update(tg_update)
+        await dp.feed_update(tg_update)
         return {"ok": True}
     except Exception as e:
         logger.error(f"Ошибка при обработке webhook: {e}")
