@@ -254,4 +254,3 @@ async def auto_search():
                                text="📊 Автопоиск за сегодня:\n\n" + "\n".join(report[:20]))
 
 import asyncio
-
