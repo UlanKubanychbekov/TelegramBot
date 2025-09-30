@@ -255,18 +255,3 @@ async def auto_search():
 
 import asyncio
 
-async def main():
-    await userbot.start()
-    print("Userbot запущен")
-    scheduler.add_job(auto_search, "cron", hour=10, minute=0)
-    scheduler.start()
-    print("Scheduler запущен")
-    print("Бот запущен")
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(main())
-    except (KeyboardInterrupt, SystemExit):
-        print("Бот остановлен пользователем")

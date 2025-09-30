@@ -102,8 +102,8 @@ async def startup_event():
     webhook_url = os.getenv("WEBHOOK_URL")
     if webhook_url:
         try:
-            await bot.delete_webhook(drop_pending_updates=True)
-            await bot.set_webhook(webhook_url)
+             await bot.delete_webhook(drop_pending_updates=True)
+        await bot.set_webhook(webhook_url)
             logger.info(f"Webhook установлен автоматически на {webhook_url}")
         except Exception as e:
             logger.error(f"Не удалось установить webhook при старте: {e}")
