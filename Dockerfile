@@ -16,6 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем код
 COPY . .
-COPY userbot_session.session /app/app/bot/userbot_session.session
+COPY userbot_session_old.session /app/app/bot/userbot_session_old.session
 # Запуск бота
 CMD ["python", "-m", "app.bot.Bot"]
