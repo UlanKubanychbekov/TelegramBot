@@ -23,7 +23,7 @@ bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
-# Импортируем функции регистрации хендлеров
+# --- Импортируем функции регистрации хендлеров ---
 from app.bot.handlers import register_handlers
 register_handlers(dp)
 
@@ -61,11 +61,16 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def telegram_webhook(update: dict):
     try:
         tg_update = Update(**update)
-        await dp.feed_update(tg_update)
+        # Логируем входящее сообщение
+        if tg_update.message:
+            user = tg_update.message.from_user
+            logger.info(f"Получено сообщение от {user.id} ({user.first_name}): {tg_update.message.text}")
+        await dp.feed_update(tg_update)  # Aiogram 3.x
         return {"ok": True}
     except Exception as e:
         logger.error(f"Ошибка при обработке webhook: {e}")
         return {"ok": False, "error": str(e)}
+
 
 # --- Startup ---
 @app.on_event("startup")
@@ -73,7 +78,7 @@ async def startup_event():
     await init_db()
     logger.info("База данных инициализирована")
 
-    webhook_url = os.getenv("WEBHOOK_URL")
+    webhook_url = os.getenv("WEBHOOK_URL", "").strip()
     if webhook_url:
         try:
             await bot.delete_webhook(drop_pending_updates=True)
@@ -87,7 +92,7 @@ async def startup_event():
 # --- Ручка для установки webhook ---
 @app.get("/set_webhook")
 async def set_webhook():
-    webhook_url = os.getenv("WEBHOOK_URL")
+    webhook_url = os.getenv("WEBHOOK_URL", "").strip()
     if not webhook_url:
         return {"ok": False, "error": "WEBHOOK_URL не задан"}
     try:
