@@ -15,7 +15,7 @@ API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 USERBOT_SESSION = "userbot_session"
 
-userbot = TelegramClient(USERBOT_SESSION, API_ID, API_HASH)
+userbot = TelegramClient("userbot_session_old", API_ID, API_HASH)
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()  
 scheduler = AsyncIOScheduler(timezone=pytz.timezone("Asia/Bishkek"))
