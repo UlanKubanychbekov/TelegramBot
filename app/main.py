@@ -84,6 +84,32 @@ async def startup_event():
     else:
         logger.warning("WEBHOOK_URL не задан — бот работать не будет!")
 
+# --- Ручка для установки webhook ---
+@app.get("/set_webhook")
+async def set_webhook():
+    webhook_url = os.getenv("WEBHOOK_URL")
+    if not webhook_url:
+        return {"ok": False, "error": "WEBHOOK_URL не задан"}
+    try:
+        await bot.delete_webhook(drop_pending_updates=True)
+        await bot.set_webhook(webhook_url)
+        logger.info(f"Webhook установлен на {webhook_url}")
+        return {"ok": True, "message": f"Webhook установлен на {webhook_url}"}
+    except Exception as e:
+        logger.error(f"Не удалось установить webhook: {e}")
+        return {"ok": False, "error": str(e)}
+
+# --- Ручка для удаления webhook ---
+@app.get("/delete_webhook")
+async def delete_webhook():
+    try:
+        await bot.delete_webhook()
+        logger.info("Webhook удалён")
+        return {"ok": True, "message": "Webhook удалён"}
+    except Exception as e:
+        logger.error(f"Не удалось удалить webhook: {e}")
+        return {"ok": False, "error": str(e)}
+
 # --- Shutdown ---
 @app.on_event("shutdown")
 async def shutdown_event():
