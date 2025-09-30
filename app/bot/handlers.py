@@ -1,7 +1,15 @@
 # app/bot/handlers.py
-from aiogram import Dispatcher, types
+from aiogram import Router
+from aiogram.types import Message
 
-def register_handlers(dp: Dispatcher):
-    @dp.message()
-    async def echo(message: types.Message):
-        await message.answer(f"Вы написали: {message.text}")
+router = Router()
+
+# Правильный хендлер для aiogram 3.x
+@router.message()
+async def start_command(message: Message):
+    if message.text and message.text.lower() == "/start":
+        await message.answer(f"Привет, {message.from_user.first_name}! Бот работает.")
+
+# функция для регистрации роутеров в Dispatcher
+def register_handlers(dp):
+    dp.include_router(router)

@@ -23,9 +23,9 @@ bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
-# --- Импортируем функции регистрации хендлеров ---
-from app.bot.handlers import register_handlers
-register_handlers(dp)
+# --- Импортируем роутер и регистрируем его --- 
+from app.bot.handlers import router as bot_router
+dp.include_router(bot_router)  # подключаем роутер один раз
 
 # --- API роуты ---
 from app.api.EmployeeApi import router as employees_router
@@ -61,16 +61,14 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def telegram_webhook(update: dict):
     try:
         tg_update = Update(**update)
-        # Логируем входящее сообщение
         if tg_update.message:
             user = tg_update.message.from_user
             logger.info(f"Получено сообщение от {user.id} ({user.first_name}): {tg_update.message.text}")
-        await dp.feed_update(tg_update)  # Aiogram 3.x
+        await dp.feed_update(tg_update)
         return {"ok": True}
     except Exception as e:
         logger.error(f"Ошибка при обработке webhook: {e}")
         return {"ok": False, "error": str(e)}
-
 
 # --- Startup ---
 @app.on_event("startup")
@@ -81,6 +79,7 @@ async def startup_event():
     webhook_url = os.getenv("WEBHOOK_URL", "").strip()
     if webhook_url:
         try:
+            # удаляем старый webhook и сбрасываем обновления
             await bot.delete_webhook(drop_pending_updates=True)
             await bot.set_webhook(webhook_url)
             logger.info(f"Webhook установлен автоматически на {webhook_url}")
@@ -89,7 +88,7 @@ async def startup_event():
     else:
         logger.warning("WEBHOOK_URL не задан — бот работать не будет!")
 
-# --- Ручка для установки webhook ---
+# --- Ручки для работы с webhook ---
 @app.get("/set_webhook")
 async def set_webhook():
     webhook_url = os.getenv("WEBHOOK_URL", "").strip()
@@ -104,7 +103,6 @@ async def set_webhook():
         logger.error(f"Не удалось установить webhook: {e}")
         return {"ok": False, "error": str(e)}
 
-# --- Ручка для удаления webhook ---
 @app.get("/delete_webhook")
 async def delete_webhook():
     try:
