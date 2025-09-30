@@ -8,15 +8,6 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Update
 from app.database import init_db
 
-# --- Импорт роутеров ---
-from app.api.EmployeeApi import router as employees_router
-from app.api.RequestApi import router as requests_router
-from app.api.SupplierApi import router as suppliers_router
-from app.api.RequestSuggestionApi import router as suggestions_router
-from app.api.TruckTypeApi import router as truck_types_router
-from app.api.SpeedTypeApi import router as speed_types_router
-from app.bot.handlers import register_handlers
-
 # --- Логгер ---
 logger = logging.getLogger("uvicorn.error")
 
@@ -25,16 +16,25 @@ app = FastAPI()
 
 # --- Telegram bot ---
 API_TOKEN = os.getenv("BOT_TOKEN")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-if not API_TOKEN or not WEBHOOK_URL:
-    raise RuntimeError("BOT_TOKEN или WEBHOOK_URL не задан")
+if not API_TOKEN:
+    raise RuntimeError("BOT_TOKEN не задан в переменных окружения!")
 
 bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
+
+# Импортируем функции регистрации хендлеров
+from app.bot.handlers import register_handlers
 register_handlers(dp)
 
 # --- API роуты ---
+from app.api.EmployeeApi import router as employees_router
+from app.api.RequestApi import router as requests_router
+from app.api.SupplierApi import router as suppliers_router
+from app.api.RequestSuggestionApi import router as suggestions_router
+from app.api.TruckTypeApi import router as truck_types_router
+from app.api.SpeedTypeApi import router as speed_types_router
+
 app.include_router(employees_router, prefix="/api", tags=["employees"])
 app.include_router(requests_router, prefix="/api", tags=["requests"])
 app.include_router(suppliers_router, prefix="/api", tags=["suppliers"])
@@ -42,10 +42,10 @@ app.include_router(suggestions_router, prefix="/api", tags=["suggestions"])
 app.include_router(truck_types_router, prefix="/api", tags=["truck_types"])
 app.include_router(speed_types_router, prefix="/api", tags=["speed_types"])
 
-# --- Root endpoint ---
+# --- Root ---
 @app.get("/")
-async def root():
-    return {"message": "FastAPI + Aiogram Webhook is running"}
+async def read_root():
+    return {"message": "Welcome to the FastAPI application"}
 
 # --- Глобальный обработчик ошибок ---
 @app.exception_handler(Exception)
@@ -64,22 +64,27 @@ async def telegram_webhook(update: dict):
         await dp.process_update(tg_update)
         return {"ok": True}
     except Exception as e:
-        logger.error(f"Webhook processing error: {e}")
+        logger.error(f"Ошибка при обработке webhook: {e}")
         return {"ok": False, "error": str(e)}
 
-# --- Startup event ---
+# --- Startup ---
 @app.on_event("startup")
 async def startup_event():
     await init_db()
     logger.info("База данных инициализирована")
-    try:
-        await bot.delete_webhook(drop_pending_updates=True)
-        await bot.set_webhook(WEBHOOK_URL)
-        logger.info(f"Webhook установлен на {WEBHOOK_URL}")
-    except Exception as e:
-        logger.error(f"Не удалось установить webhook: {e}")
 
-# --- Shutdown event ---
+    webhook_url = os.getenv("WEBHOOK_URL")
+    if webhook_url:
+        try:
+            await bot.delete_webhook(drop_pending_updates=True)
+            await bot.set_webhook(webhook_url)
+            logger.info(f"Webhook установлен автоматически на {webhook_url}")
+        except Exception as e:
+            logger.error(f"Не удалось установить webhook при старте: {e}")
+    else:
+        logger.warning("WEBHOOK_URL не задан — бот работать не будет!")
+
+# --- Shutdown ---
 @app.on_event("shutdown")
 async def shutdown_event():
     try:
